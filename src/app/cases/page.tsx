@@ -7,7 +7,9 @@ import { casesAPI, sessionsAPI } from '@/lib/api'
 import { ICaseTemplate } from '@/types'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
+import { DifficultyBadge } from '@/components/ui/Badge'
+import { InlineLoader } from '@/components/ui/LoadingSpinner'
+import SearchAndFilter from '@/components/features/SearchAndFilter'
 
 export default function CasesPage() {
   const { user } = useAuth()
@@ -63,14 +65,7 @@ export default function CasesPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
-            ))}
-          </div>
-        </div>
+        <InlineLoader message="Loading case library..." />
       </div>
     )
   }
@@ -84,45 +79,37 @@ export default function CasesPage() {
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Input
-          placeholder="Search cases..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+      {/* Search and Filters */}
+      <div className="mb-8">
+        <SearchAndFilter
+          searchPlaceholder="Search cases by title or description..."
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          filters={[
+            {
+              label: 'Industry',
+              key: 'industry',
+              options: industries.map(industry => ({ value: industry, label: industry })),
+              value: selectedIndustry,
+              onChange: setSelectedIndustry
+            },
+            {
+              label: 'Difficulty',
+              key: 'difficulty',
+              options: difficulties.map(difficulty => ({ 
+                value: difficulty, 
+                label: difficulty.charAt(0).toUpperCase() + difficulty.slice(1) 
+              })),
+              value: selectedDifficulty,
+              onChange: setSelectedDifficulty
+            }
+          ]}
+          onClearFilters={() => {
+            setSearchTerm('')
+            setSelectedIndustry('')
+            setSelectedDifficulty('')
+          }}
         />
-        
-        <select
-          value={selectedIndustry}
-          onChange={(e) => setSelectedIndustry(e.target.value)}
-          className="input-field"
-        >
-          <option value="">All Industries</option>
-          {industries.map(industry => (
-            <option key={industry} value={industry}>{industry}</option>
-          ))}
-        </select>
-        
-        <select
-          value={selectedDifficulty}
-          onChange={(e) => setSelectedDifficulty(e.target.value)}
-          className="input-field"
-        >
-          <option value="">All Difficulties</option>
-          {difficulties.map(difficulty => (
-            <option key={difficulty} value={difficulty}>
-              {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-            </option>
-          ))}
-        </select>
-        
-        <Button variant="outline" onClick={() => {
-          setSearchTerm('')
-          setSelectedIndustry('')
-          setSelectedDifficulty('')
-        }}>
-          Clear Filters
-        </Button>
       </div>
 
       {/* Cases Grid */}
@@ -131,17 +118,9 @@ export default function CasesPage() {
           {filteredCases.map((caseTemplate) => (
             <Card key={caseTemplate._id}>
               <div className="flex flex-col h-full">
-                <div className="flex-1">
+                  <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      caseTemplate.difficulty === 'beginner' 
-                        ? 'bg-green-100 text-green-800'
-                        : caseTemplate.difficulty === 'intermediate'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {caseTemplate.difficulty}
-                    </span>
+                    <DifficultyBadge difficulty={caseTemplate.difficulty} />
                     <span className="text-xs text-gray-500">
                       {caseTemplate.estimatedDuration} min
                     </span>

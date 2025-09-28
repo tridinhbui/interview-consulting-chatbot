@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { sessionsAPI } from '@/lib/api'
 import { ISession, IMessage } from '@/types'
-import ChatInterface from '@/components/chat/ChatInterface'
+import AdvancedChatInterface from '@/components/features/AdvancedChatInterface'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 
@@ -134,7 +134,7 @@ export default function ChatPage() {
 
       {/* Chat Interface */}
       <Card padding="none" className="h-96">
-        <ChatInterface
+        <AdvancedChatInterface
           sessionId={sessionId}
           initialMessages={messages}
           onNewMessage={(message) => setMessages(prev => [...prev, message])}
